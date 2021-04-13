@@ -1,0 +1,23 @@
+
+apiVersion: extensions/v1beta1
+
+kind: Ingress
+metadata:
+  name: public-enemy-bo
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+    - hosts:
+        - public-enemy-bo.kube.developpement.insee.fr
+  rules:
+    
+    - host: public-enemy-bo.kube.developpement.insee.fr
+      http:
+        paths:
+         
+          - path: /
+            backend:
+              serviceName: public-enemy-bo
+              servicePort: http
+ 
