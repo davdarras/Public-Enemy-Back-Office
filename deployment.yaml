@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: public-enemy-bo
-          image: inseefr/public-enemy-back-office:0.0.1-SNAPSHOT
+          image: inseefr/public-enemy-back-office:0.0.2
         
 
 

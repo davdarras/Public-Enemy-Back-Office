@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - public-enemy-bo.kube.developpement.insee.fr
+        - public-enemy-bo.dev.insee.io
   rules:
     
-    - host: public-enemy-bo.kube.developpement.insee.fr
+    - host: public-enemy-bo.dev.insee.io
       http:
         paths:
          
