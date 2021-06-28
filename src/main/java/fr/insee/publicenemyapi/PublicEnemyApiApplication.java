@@ -1,10 +1,12 @@
 package fr.insee.publicenemyapi;
 
+import fr.insee.publicenemyapi.config.ApplicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.AbstractEnvironment;
@@ -21,6 +23,9 @@ public class PublicEnemyApiApplication extends SpringBootServletInitializer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PublicEnemyApiApplication.class);
 
 	public static void main(String[] args) {
+
+		AnnotationConfigApplicationContext appContext = new AnnotationConfigApplicationContext(
+				ApplicationContext.class);
 		SpringApplication.run(PublicEnemyApiApplication.class, args);
 	}
 
