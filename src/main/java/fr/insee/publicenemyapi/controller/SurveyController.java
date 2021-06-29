@@ -21,6 +21,7 @@ import fr.insee.publicenemyapi.dao.impl.jpa.ModelDaoJpaImpl;
 import fr.insee.publicenemyapi.model.SurveyData;
 import fr.insee.publicenemyapi.model.SurveyMetadata;
 import fr.insee.publicenemyapi.model.SurveyModel;
+import fr.insee.publicenemyapi.services.SurveyItemsServices;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +46,10 @@ public class SurveyController {
 
 	@Autowired
 	SurveyServices qs;
+
 	@Autowired
-	ModelDaoJpaImpl modelDao;
-	@Autowired
-	DataDaoJpaImpl dataDao;
-	@Autowired
-	MetadataDaoJpaImpl metadataDao;
+	SurveyItemsServices itemsService;
+
 
 	@RequestMapping(value = "/survey-papi", produces = MediaType.APPLICATION_OCTET_STREAM, consumes = MediaType.MULTIPART_FORM_DATA, method = {
 			RequestMethod.POST })
@@ -124,71 +123,26 @@ public class SurveyController {
 	}
 
 	@RequestMapping(value = "/survey-cawiv2", consumes = MediaType.MULTIPART_FORM_DATA, method = { RequestMethod.POST })
-	public @ResponseBody String sendUrl(@RequestParam("survey") String survey, @RequestParam("data") MultipartFile data,
+	public @ResponseBody String sendUrlCawi(@RequestParam("survey") String survey, @RequestParam("data") MultipartFile data,
 										@RequestParam("model") MultipartFile model, @RequestParam("metadata") MultipartFile metadata) throws Exception {
 
 
-		InputStream isModel = model.getInputStream();
-		JSONParser jsonParser = new JSONParser();
-		JSONObject jsonModel = (JSONObject)jsonParser.parse(
-				new InputStreamReader(isModel, "UTF-8"));
+		itemsService.persistSurveyItems(survey,model,data,metadata,"cawi");
 
-		InputStream isData = data.getInputStream();
-		JSONObject jsonData = (JSONObject)jsonParser.parse(
-				new InputStreamReader(isData, "UTF-8"));
+		String domain="https://questionnaires-web-particuliers.developpement.insee.fr/visualize";
 
-		JSONObject jsonMetadata=null;
-		if(null!=metadata) {
-			InputStream isMetadata = metadata.getInputStream();
+		return itemsService.buildVisualizationUrl(domain,survey,"cawi");
 
-			jsonMetadata = (JSONObject) jsonParser.parse(
-					new InputStreamReader(isMetadata, "UTF-8"));
-		}
+	}
 
-		SurveyModel sModel =new SurveyModel(survey, jsonModel);
-		SurveyData sData = new SurveyData(survey, jsonData);
-		SurveyMetadata sMetadata=null;
-		if(null!=metadata) {
-			sMetadata = new SurveyMetadata(survey, jsonMetadata);
-		}
+	@RequestMapping(value = "/survey-capi", consumes = MediaType.MULTIPART_FORM_DATA, method = { RequestMethod.POST })
+	public @ResponseBody String sendUrlCapi(@RequestParam("survey") String survey, @RequestParam("data") MultipartFile data,
+										@RequestParam("model") MultipartFile model) throws Exception {
 
 
-		if(modelDao.exist(survey))
-		{
-			modelDao.updateModel(sModel);
-		}else{
-			modelDao.createModel(sModel);
-		}
-
-		if(dataDao.exist(survey))
-		{
-			dataDao.updateData(sData);
-		}else{
-			dataDao.createData(sData);
-		}
-
-		if(null!= metadata && metadataDao.exist(survey))
-		{
-			metadataDao.updateMetadata(sMetadata);
-		}else{
-			if(null!=metadata) {
-				metadataDao.createMetadata(sMetadata);
-			}
-		}
-
-		String url = "https://questionnaires-web-particuliers.developpement.insee.fr/visualize?questionnaire={modelUrl}&metadata={metadataUrl}&data={dataUrl}";
-
-// URI (URL) parameters
-		Map<String, String> urlParams = new HashMap<>();
-		urlParams.put("modelUrl", "http://localhost:8080/survey/"+survey+"/model");
-		urlParams.put("metadataUrl", "http://localhost:8080/survey/"+survey+"/metadata");
-		urlParams.put("dataUrl", "http://localhost:8080/survey/"+survey+"/data");
-
-		URI uri = UriComponentsBuilder.fromUriString(url)
-				.buildAndExpand(urlParams)
-				.toUri();
-
-		return uri.toString();
+		itemsService.persistSurveyItems(survey,model,data,null,"capi");
+		String domain="https://queen.dev.insee.io/queen/visualize";
+		return itemsService.buildVisualizationUrl(domain,survey,"capi");
 
 	}
 
