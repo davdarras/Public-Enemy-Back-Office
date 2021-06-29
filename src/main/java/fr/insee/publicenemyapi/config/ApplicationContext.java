@@ -1,5 +1,6 @@
 package fr.insee.publicenemyapi.config;
 
+import liquibase.integration.spring.SpringLiquibase;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -37,6 +38,8 @@ public class ApplicationContext {
 
     @Value("${fr.insee.publicenemyapi.persistence.database.driver}")
     private String dbDriver;
+    @Value("${fr.insee.publicenemyapi.env}")
+    String environment;
 
 
 
@@ -80,5 +83,14 @@ public class ApplicationContext {
         }
         jdbcTemplate.setResultsMapCaseInsensitive(true);
         return jdbcTemplate;
+    }
+    @Bean(name="liquibase")
+    public SpringLiquibase liquibase() {
+        SpringLiquibase liquibase = new SpringLiquibase();
+        liquibase.setDataSource(dataSource());
+        liquibase.setContexts(environment);
+        liquibase.setChangeLog("classpath:db/master.xml");
+        liquibase.setShouldRun(true);
+        return liquibase;
     }
 }
