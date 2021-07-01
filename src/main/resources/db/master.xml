@@ -1,35 +1,13 @@
-<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="utf-8"?>
 <databaseChangeLog
 	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+	<changeSet author="ethuaud" id="1" context="not prod">
+	    <sql dbms="postgresql" endDelimiter=";">
+	        CREATE SCHEMA IF NOT EXISTS public
+	    </sql>
+	</changeSet>
+	<include file="changelog/000_init.xml" relativeToChangelogFile="true"/>
 	
-    <changeSet author="admin (generated)" id="1587050082650-2">
-        <createTable tableName="model">
-            <column name="id" type="VARCHAR(50)">
-                <constraints primaryKey="true" primaryKeyName="model_pkey"/>
-            </column>
-            <column name="value" type="JSONB"/>
-            
-        </createTable>
-    </changeSet>
-    <changeSet author="admin (generated)" id="1587050082650-3">
-        <createTable tableName="data">
-            <column name="id" type="VARCHAR(50)">
-                <constraints primaryKey="true" primaryKeyName="data_pkey"/>
-            </column>
-            <column name="value" type="JSONB"/>
-            
-        </createTable>
-    </changeSet>
-    <changeSet author="admin (generated)" id="1587050082650-4">
-        <createTable tableName="metadata">
-            <column name="id" type="VARCHAR(50)">
-                <constraints primaryKey="true" primaryKeyName="metadata_pkey"/>
-            </column>
-            
-            <column name="value" type="JSONB"/>
-        </createTable>
-    </changeSet>
-	</databaseChangeLog>
+</databaseChangeLog>
