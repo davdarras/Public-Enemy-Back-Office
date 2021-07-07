@@ -7,10 +7,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 
+import fr.insee.publicenemyapi.PublicEnemyApiApplication;
 import fr.insee.publicenemyapi.config.ApplicationContext;
 import fr.insee.publicenemyapi.dao.DataDao;
 import fr.insee.publicenemyapi.dao.MetadataDao;
@@ -49,6 +51,8 @@ public class SurveyController {
 
 	@Autowired
 	SurveyItemsServices itemsService;
+
+	public AnnotationConfigApplicationContext context;
 
 
 	@RequestMapping(value = "/survey-papi", produces = MediaType.APPLICATION_OCTET_STREAM, consumes = MediaType.MULTIPART_FORM_DATA, method = {
@@ -128,10 +132,20 @@ public class SurveyController {
 
 
 		itemsService.persistSurveyItems(survey,model,data,metadata,"cawi");
+		String stromaeVisualization=null;
+		try (InputStream input = PublicEnemyApiApplication.class.getClassLoader()
+				.getResourceAsStream("application.properties")) {
 
-		String domain="https://questionnaires-web-particuliers.developpement.insee.fr/visualize";
+			Properties prop = new Properties();
 
-		return itemsService.buildVisualizationUrl(domain,survey,"cawi");
+			// load a properties file
+			prop.load(input);
+			stromaeVisualization = prop.getProperty("fr.insee.publicenemyapi.services.visualize.stromae");
+		}catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
+		return itemsService.buildVisualizationUrl(stromaeVisualization,survey,"cawi");
 
 	}
 
@@ -141,8 +155,19 @@ public class SurveyController {
 
 
 		itemsService.persistSurveyItems(survey,model,data,null,"capi");
-		String domain="https://queen.dev.insee.io/queen/visualize";
-		return itemsService.buildVisualizationUrl(domain,survey,"capi");
+		String queenVisualization=null;
+		try (InputStream input = PublicEnemyApiApplication.class.getClassLoader()
+				.getResourceAsStream("application.properties")) {
+
+			Properties prop = new Properties();
+
+			// load a properties file
+			prop.load(input);
+			queenVisualization = prop.getProperty("fr.insee.publicenemyapi.services.visualize.queen");
+		}catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		return itemsService.buildVisualizationUrl(queenVisualization,survey,"capi");
 
 	}
 
