@@ -1,5 +1,6 @@
 package fr.insee.publicenemyapi.services;
 
+import fr.insee.publicenemyapi.PublicEnemyApiApplication;
 import fr.insee.publicenemyapi.dao.impl.jpa.DataDaoJpaImpl;
 import fr.insee.publicenemyapi.dao.impl.jpa.MetadataDaoJpaImpl;
 import fr.insee.publicenemyapi.dao.impl.jpa.ModelDaoJpaImpl;
@@ -21,6 +22,7 @@ import java.net.URI;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 @Service
 public class SurveyItemsServices {
@@ -86,6 +88,18 @@ public class SurveyItemsServices {
 
     public String buildVisualizationUrl(String domain, String survey, String mode)
     {
+        String apiDomainUrl=null;
+        try (InputStream input = PublicEnemyApiApplication.class.getClassLoader()
+                .getResourceAsStream("application.properties")) {
+
+            Properties prop = new Properties();
+
+            // load a properties file
+            prop.load(input);
+            apiDomainUrl = prop.getProperty("fr.insee.publicenemyapi.services.domain.url");
+        }catch (IOException ex) {
+            ex.printStackTrace();
+        }
         String url = domain+"?questionnaire={modelUrl}&data={dataUrl}";
         if (mode=="cawi")
         {
@@ -93,10 +107,10 @@ public class SurveyItemsServices {
         }
 // URI (URL) parameters
         Map<String, String> urlParams = new HashMap<>();
-        urlParams.put("modelUrl", "http://localhost:8080/survey/"+survey+"/model");
-        urlParams.put("dataUrl", "http://localhost:8080/survey/"+survey+"/data");
+        urlParams.put("modelUrl", apiDomainUrl+"/survey/"+survey+"/model");
+        urlParams.put("dataUrl", apiDomainUrl+"/survey/"+survey+"/data");
       if(mode=="cawi"){
-          urlParams.put("metadataUrl", "http://localhost:8080/survey/"+survey+"/metadata");
+          urlParams.put("metadataUrl", apiDomainUrl+"/survey/"+survey+"/metadata");
 
       }
 
