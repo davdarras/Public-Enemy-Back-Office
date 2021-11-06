@@ -26,6 +26,8 @@ import fr.insee.publicenemyapi.model.SurveyModel;
 import fr.insee.publicenemyapi.services.SurveyItemsServices;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.ByteArrayResource;
@@ -51,6 +53,9 @@ public class SurveyController {
 
 	@Autowired
 	SurveyItemsServices itemsService;
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(SurveyController.class);
+
 
 	public AnnotationConfigApplicationContext context;
 
