@@ -96,7 +96,7 @@ public class SurveyServices {
 					out.close();
 				}
 			} catch (IOException ioe) {
-				System.out.println("Error in closing the Stream");
+				logger.warn("Error in closing the Stream");
 			}
 
 		}
@@ -130,7 +130,7 @@ public class SurveyServices {
 					out.close();
 				}
 			} catch (IOException ioe) {
-				System.out.println("Error in closing the Stream");
+				logger.warn("Error in closing the Stream");
 			}
 
 		}
