@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>fr.insee</groupId>
 	<artifactId>public-enemy-api</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<name>public-enemy-api</name>
 	<description>Api of public-enemy</description>
 	<packaging>war</packaging>
@@ -20,6 +20,7 @@
 		<java.version>11</java.version>
 		 <javax.activation.version>1.2.0</javax.activation.version>
         <jaxb.api.version>2.3.0</jaxb.api.version>
+		<log4j.version>2.12.1</log4j.version>
 	</properties>
 
 	<dependencies>
@@ -132,6 +133,20 @@
 			<groupId>com.sun.activation</groupId>
 			<artifactId>javax.activation</artifactId>
 			<version>${javax.activation.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-log4j2</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-web</artifactId>
 		</dependency>
 
 		<dependency>
