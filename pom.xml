@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>fr.insee</groupId>
 	<artifactId>public-enemy-api</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<name>public-enemy-api</name>
 	<description>Api of public-enemy</description>
 	<packaging>war</packaging>
