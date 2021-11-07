@@ -77,7 +77,7 @@ public class ApplicationContext {
     public JdbcTemplate jdbcTemplate(DataSource dataSource) {
         JdbcTemplate jdbcTemplate = null;
         try {
-            jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(connection(dataSource), false));
+            jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(connection(dataSource), true));
         } catch (SQLException e) {
             e.printStackTrace();
         }
