@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>fr.insee</groupId>
 	<artifactId>public-enemy-api</artifactId>
-	<version>1.0.9</version>
+	<version>1.0.10</version>
 	<name>public-enemy-api</name>
 	<description>Api of public-enemy</description>
 	<packaging>war</packaging>
@@ -20,7 +20,7 @@
 		<java.version>11</java.version>
 		 <javax.activation.version>1.2.0</javax.activation.version>
         <jaxb.api.version>2.3.0</jaxb.api.version>
-		<log4j2.version>2.16.0</log4j2.version>
+		<log4j2.version>2.17.0</log4j2.version>
 	</properties>
 
 	<dependencies>
