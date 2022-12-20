@@ -16,7 +16,7 @@ public class Questionnaire {
     private Long id;
 
     @NotNull
-    private String questionnaireId;
+    private String poguesId;
 
     @NotNull
     private String label;
@@ -32,17 +32,23 @@ public class Questionnaire {
 
     private Date updatedDate;
 
-    public Questionnaire(String questionnaireId, String label, Context context, List<Mode> modes, byte[] csvContent) {
-        this.questionnaireId = questionnaireId;
+    public Questionnaire(String poguesId, String label, Context context, List<Mode> modes, byte[] surveyUnitData) {
+        this.poguesId = poguesId;
         this.label = label;
         this.context = context;
         this.modes = modes;
-        this.surveyUnitData = csvContent;
+        this.surveyUnitData = surveyUnitData;
     }
 
     public Questionnaire(Long id, Context context, byte[] surveyUnitData) {
         this.id = id;
         this.context = context;
         this.surveyUnitData = surveyUnitData;
+    }
+
+    public Questionnaire(String poguesId, String label, List<Mode> modes) {
+        this.poguesId = poguesId;
+        this.label = label;
+        this.modes = modes;
     }
 }

@@ -40,7 +40,7 @@ public class QuestionnaireEntity extends BaseQuestionnaireEntity {
 
     public static QuestionnaireEntity createFromModel(String campaignLabel, Questionnaire questionnaire) {
         CampaignEntity campaign = CampaignEntity.createWithLabel(campaignLabel);
-        QuestionnaireEntity questionnaireEntity = new QuestionnaireEntity(questionnaire.getQuestionnaireId(), campaign, questionnaire.getLabel(),questionnaire.getContext(), questionnaire.getModes(), questionnaire.getSurveyUnitData());
+        QuestionnaireEntity questionnaireEntity = new QuestionnaireEntity(questionnaire.getPoguesId(), campaign, questionnaire.getLabel(),questionnaire.getContext(), questionnaire.getModes(), questionnaire.getSurveyUnitData());
         Date date = Calendar.getInstance().getTime();
     
         questionnaireEntity.setCreationDate(date);
@@ -48,6 +48,10 @@ public class QuestionnaireEntity extends BaseQuestionnaireEntity {
         return questionnaireEntity;
     }
 
+    /**
+     * Update questionnaire entity from questionnaire
+     * @param questionnaire
+     */
     public void update(Questionnaire questionnaire) {        
         byte [] questionnaireUnitData = questionnaire.getSurveyUnitData();
         if(questionnaireUnitData != null && questionnaireUnitData.length > 0) {

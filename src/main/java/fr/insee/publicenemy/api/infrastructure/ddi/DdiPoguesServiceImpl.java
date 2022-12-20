@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
+import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.exceptions.ApiException;
 import fr.insee.publicenemy.api.application.ports.DdiServicePort;
 
@@ -33,13 +35,40 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
     }
 
     @Override
-    public Ddi getDdi(String questionnaireId) {
-        JsonNode jsonPogues = getJsonPogues(questionnaireId);
-        List<String> modes = new ArrayList<>();
-        jsonPogues.get("TargetMode").forEach(node -> modes.add(node.asText()));
-        String label = jsonPogues.get("Label").get(0).asText();
+    public Ddi getDdi(String poguesId) {
+        JsonNode jsonPogues = getJsonPogues(poguesId);
+        PoguesDataSummary summary = getPoguesSummary(jsonPogues);
         byte[] xmlDdi = getXmlDdi(jsonPogues);
-        return new Ddi(questionnaireId, label, modes, xmlDdi);
+        return new Ddi(poguesId, summary.getLabel(), summary.getModes(), xmlDdi);
+    }
+
+    @Override
+    public Questionnaire getQuestionnaire(String poguesId) {
+        PoguesDataSummary summary = getPoguesSummary(poguesId);
+        return new Questionnaire(poguesId, summary.getLabel(), summary.getModes());
+    }
+
+    /**
+     * Retrieve summary details from JSON Pogues
+     * @param poguesId
+     * @return
+     */
+    private PoguesDataSummary getPoguesSummary(String poguesId) {
+        JsonNode jsonPogues = getJsonPogues(poguesId);
+        return getPoguesSummary(jsonPogues);
+    }
+
+    /**
+     * Retrieve summary details from JSON Pogues
+     * @param poguesId
+     * @param jsonPogues
+     * @return
+     */
+    private PoguesDataSummary getPoguesSummary(JsonNode jsonPogues) {
+        List<Mode> modes = new ArrayList<>();
+        jsonPogues.get("TargetMode").forEach(node -> modes.add(Mode.valueOf(node.asText())));
+        String label = jsonPogues.get("Label").get(0).asText();
+        return new PoguesDataSummary(label, modes);
     }
 
     /**

@@ -1,6 +1,7 @@
 package fr.insee.publicenemy.api.application.ports;
 
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 
 public interface DdiServicePort {
     /**
@@ -9,4 +10,11 @@ public interface DdiServicePort {
      * @return DDI
      */
     Ddi getDdi(String questionnaireId);
+
+    /**
+     * 
+     * @param poguesId
+     * @return questionnaire details from pogues
+     */
+    Questionnaire getQuestionnaire(String poguesId);
 }
