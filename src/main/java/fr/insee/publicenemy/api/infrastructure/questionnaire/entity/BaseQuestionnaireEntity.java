@@ -42,7 +42,7 @@ public class BaseQuestionnaireEntity {
 
     @Column(name="questionnaire_pogues_id")
     @NotNull
-    private String questionnaireId;
+    private String poguesId;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "campaign_id", referencedColumnName = "id")
@@ -70,8 +70,8 @@ public class BaseQuestionnaireEntity {
     @Temporal(TemporalType.DATE)
     private Date updatedDate;
 
-    BaseQuestionnaireEntity(String questionnaireId, CampaignEntity campaign, String label, Context context, List<Mode> modes) {
-        this.questionnaireId = questionnaireId;
+    BaseQuestionnaireEntity(String poguesId, CampaignEntity campaign, String label, Context context, List<Mode> modes) {
+        this.poguesId = poguesId;
         this.label = label;
         this.context = context;
         this.modes = modes;
@@ -81,7 +81,7 @@ public class BaseQuestionnaireEntity {
     public Questionnaire toModel() {
         Questionnaire questionnaire = new Questionnaire();
         questionnaire.setId(getId());
-        questionnaire.setQuestionnaireId(getQuestionnaireId());
+        questionnaire.setPoguesId(getPoguesId());
         questionnaire.setLabel(getLabel());
         questionnaire.setContext(getContext());
         questionnaire.setModes(getModes());
@@ -91,7 +91,7 @@ public class BaseQuestionnaireEntity {
 
     public static BaseQuestionnaireEntity createFromModel(String campaignLabel, Questionnaire questionnaire) {
         CampaignEntity campaign = CampaignEntity.createWithLabel(campaignLabel);
-        BaseQuestionnaireEntity questionnaireEntity = new BaseQuestionnaireEntity(questionnaire.getQuestionnaireId(), campaign, questionnaire.getLabel(),questionnaire.getContext(), questionnaire.getModes());
+        BaseQuestionnaireEntity questionnaireEntity = new BaseQuestionnaireEntity(questionnaire.getPoguesId(), campaign, questionnaire.getLabel(),questionnaire.getContext(), questionnaire.getModes());
         Date date = Calendar.getInstance().getTime();
     
         questionnaireEntity.setCreationDate(date);
@@ -104,7 +104,7 @@ public class BaseQuestionnaireEntity {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((questionnaireId == null) ? 0 : questionnaireId.hashCode());
+        result = prime * result + ((poguesId == null) ? 0 : poguesId.hashCode());
         result = prime * result + ((campaign == null) ? 0 : campaign.hashCode());
         result = prime * result + ((label == null) ? 0 : label.hashCode());
         result = prime * result + ((context == null) ? 0 : context.hashCode());
@@ -128,10 +128,10 @@ public class BaseQuestionnaireEntity {
                 return false;
         } else if (!id.equals(other.id))
             return false;
-        if (questionnaireId == null) {
-            if (other.questionnaireId != null)
+        if (poguesId == null) {
+            if (other.poguesId != null)
                 return false;
-        } else if (!questionnaireId.equals(other.questionnaireId))
+        } else if (!poguesId.equals(other.poguesId))
             return false;
         if (campaign == null) {
             if (other.campaign != null)

@@ -19,13 +19,13 @@ public class DdiController {
     @Autowired
     DDIUseCase ddiUseCase;
 
-    @GetMapping("/{questionnaireId}")
-    public Ddi getDdi(@PathVariable String questionnaireId) {
-        return ddiUseCase.getDdi(questionnaireId);
+    @GetMapping("/{poguesId}")
+    public Ddi getDdi(@PathVariable String poguesId) {
+        return ddiUseCase.getDdi(poguesId);
     }
 
-    @GetMapping("/json-lunatic/{questionnaireId}")
-    public JsonLunatic getJsonLunatic(@PathVariable String questionnaireId) {
-        return ddiUseCase.getJsonLunatic(questionnaireId, Context.HOUSEHOLD, Mode.CAWI);
+    @GetMapping("/json-lunatic/{poguesId}")
+    public JsonLunatic getJsonLunatic(@PathVariable String poguesId) {
+        return ddiUseCase.getJsonLunatic(poguesId, Context.HOUSEHOLD, Mode.CAWI);
     }
 }

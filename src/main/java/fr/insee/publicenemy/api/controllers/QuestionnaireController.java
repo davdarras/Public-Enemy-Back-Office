@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
@@ -24,9 +25,11 @@ import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 public class QuestionnaireController {
 
     private final QuestionnaireUseCase questionnaireUseCase;
+    private final DDIUseCase ddiUseCase;
 
-    public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase) {
+    public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, DDIUseCase ddiUseCase) {
         this.questionnaireUseCase = questionnaireUseCase;
+        this.ddiUseCase = ddiUseCase;
     }
 
     /**
@@ -53,6 +56,17 @@ public class QuestionnaireController {
 
     /**
      * 
+     * @param poguesId
+     * @return questionnaire informations from ddi
+     */
+    @GetMapping("/pogues/{poguesId}")
+    public QuestionnaireRest getQuestionnaireFromPogues(@PathVariable String poguesId) {        
+        Questionnaire questionnaire = ddiUseCase.getQuestionnaire(poguesId);
+        return QuestionnaireRest.createFromModel(questionnaire);
+    }
+
+    /**
+     * 
      * @param questionnaireRest
      * @param surveyUnitData csv content of survey units
      * @return the saved questionnaire
@@ -64,7 +78,7 @@ public class QuestionnaireController {
             @RequestPart(name = "surveyUnitData", required = true) MultipartFile surveyUnitData) throws IOException {        
         
         byte[] csvContent = surveyUnitData.getBytes(); 
-        Questionnaire questionnaire = questionnaireUseCase.addQuestionnaire(questionnaireRest.getQuestionnaireId(), questionnaireRest.getContext(), csvContent);
+        Questionnaire questionnaire = questionnaireUseCase.addQuestionnaire(questionnaireRest.getPoguesId(), questionnaireRest.getContext(), csvContent);
         return QuestionnaireRest.createFromModel(questionnaire);
     }
 
@@ -76,13 +90,16 @@ public class QuestionnaireController {
      * @return the updated questionnaire
      * @throws IOException
      */
-    @PostMapping(path = "/{id}/save", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping(path = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public QuestionnaireRest saveQuestionnaire(
             @PathVariable Long id,
-            @RequestPart(name = "context", required = true) Context context,
-            @RequestPart(name = "surveyUnitData", required = true) MultipartFile surveyUnitData) throws IOException {        
+            @RequestPart(name = "context") Context context,
+            @RequestPart(name = "surveyUnitData", required = false) MultipartFile surveyUnitData) throws IOException {        
         
-        byte[] csvContent = surveyUnitData.getBytes(); 
+        byte[] csvContent = null;
+        if(surveyUnitData != null) {
+            csvContent = surveyUnitData.getBytes(); 
+        }
         Questionnaire questionnaire = questionnaireUseCase.saveQuestionnaire(id, context, csvContent);
         return QuestionnaireRest.createFromModel(questionnaire);
     }

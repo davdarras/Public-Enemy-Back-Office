@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QuestionnaireAddRest {
-    private String questionnaireId;
+    private String poguesId;
     private Context context;
 }

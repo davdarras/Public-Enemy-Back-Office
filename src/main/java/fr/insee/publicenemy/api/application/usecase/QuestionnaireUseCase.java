@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
-import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.QuestionnaireRepository;
 
@@ -22,22 +21,22 @@ public class QuestionnaireUseCase {
 
     /**
      * Add questionnaire
-     * @param questionnaireId
+     * @param poguesId
      * @param context
      * @param csvContent
      * @return the saved questionnaire
      */
-    public Questionnaire addQuestionnaire(String questionnaireId, Context context, byte[] csvContent) {
-        return questionnairePort.addQuestionnaire(getQuestionnaire(questionnaireId, context, csvContent));
+    public Questionnaire addQuestionnaire(String poguesId, Context context, byte[] csvContent) {
+        return questionnairePort.addQuestionnaire(getQuestionnaire(poguesId, context, csvContent));
     }
 
     /**
      * Get questionnaire
-     * @param questionnaireId
+     * @param id
      * @return the questionnaire
      */
-    public Questionnaire getQuestionnaire(Long questionnaireId) {
-        return questionnairePort.getQuestionnaire(questionnaireId);
+    public Questionnaire getQuestionnaire(Long id) {
+        return questionnairePort.getQuestionnaire(id);
     }
 
     /**
@@ -70,17 +69,13 @@ public class QuestionnaireUseCase {
 
     /**
      * Get questionnaire model
-     * @param questionnaireId
+     * @param poguesId
      * @param context
      * @param csvContent
      * @return the questionnaire model
      */
-    private Questionnaire getQuestionnaire(String questionnaireId, Context context, byte[] csvContent) {
-        Ddi ddi = ddiUseCase.getDdi(questionnaireId);
-        List<String> modesString = ddi.getModes();
-
-        List<Mode> modes = modesString.stream()
-                .map(Mode::valueOf).toList();  
-        return new Questionnaire(questionnaireId, ddi.getLabel(), context, modes, csvContent);
+    private Questionnaire getQuestionnaire(String poguesId, Context context, byte[] csvContent) {
+        Ddi ddi = ddiUseCase.getDdi(poguesId);
+        return new Questionnaire(poguesId, ddi.getLabel(), context, ddi.getModes(), csvContent);
     }
 }

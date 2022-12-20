@@ -7,6 +7,7 @@ import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.ports.DdiServicePort;
 import fr.insee.publicenemy.api.application.ports.EnoServicePort;
 
@@ -23,23 +24,32 @@ public class DDIUseCase {
     }
 
     /**
+     * Get questionnaire
+     * @param poguesId
+     * @return the questionnaire
+     */
+    public Questionnaire getQuestionnaire(String poguesId) {
+        return ddiService.getQuestionnaire(poguesId);
+    }
+
+    /**
      * Get DDI as XML format from questionnaire Id
-     * @param questionnaireId
+     * @param poguesId
      * @return DDI
      */
-    public Ddi getDdi(String questionnaireId) {
-        return ddiService.getDdi(questionnaireId);
+    public Ddi getDdi(String poguesId) {
+        return ddiService.getDdi(poguesId);
     }
 
     /**
      * Convert DDI with given identifier to a Lunatic questionnaire (json format)
-     * @param questionnaireId
+     * @param poguesId
      * @param context
      * @param mode
      * @return Json Lunatic
      */
-    public JsonLunatic getJsonLunatic(String questionnaireId, Context context, Mode mode) {
-        Ddi ddi = getDdi(questionnaireId);
+    public JsonLunatic getJsonLunatic(String poguesId, Context context, Mode mode) {
+        Ddi ddi = getDdi(poguesId);
         return enoService.getJsonLunatic(ddi, context, mode);
     }
 }
