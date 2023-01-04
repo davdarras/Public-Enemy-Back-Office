@@ -5,7 +5,7 @@
 
     <groupId>fr.insee</groupId>
     <artifactId>public-enemy-api</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.0-beta.1</version>
     <packaging>jar</packaging>
 
     <name>public-enemy-api</name>
@@ -21,6 +21,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
         <start-class>fr.insee.publicenemy.api.PublicEnemyApplication</start-class>
+        <sonar.organization>inseefr</sonar.organization>
+        <sonar.projectKey>InseeFr_Public-Enemy-Back-Office</sonar.projectKey>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.java.binaries>target</sonar.java.binaries>
     </properties>
 
     <dependencies>
@@ -67,14 +71,13 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-jasper</artifactId>
-            <scope>provided</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <!-- JPA -->
@@ -189,6 +192,10 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
