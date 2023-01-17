@@ -6,14 +6,14 @@ import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 public interface DdiServicePort {
     /**
      * Get DDI as XML format from Pogues questionnaireId
-     * @param questionnaireId
+     * @param questionnaireId questionnaire id
      * @return DDI
      */
     Ddi getDdi(String questionnaireId);
 
     /**
      * 
-     * @param poguesId
+     * @param poguesId pogues questionnaire id
      * @return questionnaire details from pogues
      */
     Questionnaire getQuestionnaire(String poguesId);

@@ -28,9 +28,9 @@ public class AppConfig implements WebMvcConfigurer {
 
     /**
      * 
-     * @param proxyUrl
-     * @param proxyPort
-     * @param builder
+     * @param proxyUrl proxy url
+     * @param proxyPort proxy port
+     * @param builder webclient builder
      * @return webclient configured with proxy
      */
     @Bean
@@ -51,7 +51,7 @@ public class AppConfig implements WebMvcConfigurer {
 
     /**
      * 
-     * @param builder
+     * @param builder webclient builder
      * @return webclient with json default headers
      */
     @Bean

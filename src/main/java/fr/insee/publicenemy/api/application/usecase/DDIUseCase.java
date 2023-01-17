@@ -15,8 +15,8 @@ import fr.insee.publicenemy.api.application.ports.EnoServicePort;
 @Transactional
 public class DDIUseCase {
     
-    private DdiServicePort ddiService;
-    private EnoServicePort enoService;
+    private final DdiServicePort ddiService;
+    private final EnoServicePort enoService;
 
     public DDIUseCase(DdiServicePort ddiService, EnoServicePort enoService) {
         this.ddiService = ddiService;
@@ -25,7 +25,7 @@ public class DDIUseCase {
 
     /**
      * Get questionnaire
-     * @param poguesId
+     * @param poguesId pogues questionnaire id
      * @return the questionnaire
      */
     public Questionnaire getQuestionnaire(String poguesId) {
@@ -34,7 +34,7 @@ public class DDIUseCase {
 
     /**
      * Get DDI as XML format from questionnaire Id
-     * @param poguesId
+     * @param poguesId pogues questionnaire id
      * @return DDI
      */
     public Ddi getDdi(String poguesId) {
@@ -43,9 +43,9 @@ public class DDIUseCase {
 
     /**
      * Convert DDI with given identifier to a Lunatic questionnaire (json format)
-     * @param poguesId
-     * @param context
-     * @param mode
+     * @param poguesId pogues questionnaire id
+     * @param context insee context
+     * @param mode questionnaire mode
      * @return Json Lunatic
      */
     public JsonLunatic getJsonLunatic(String poguesId, Context context, Mode mode) {

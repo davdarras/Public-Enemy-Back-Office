@@ -7,30 +7,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import lombok.Data;
+import lombok.NonNull;
 
-@Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class QuestionnaireRest {
+public record QuestionnaireRest(Long id, String poguesId, String label, Context context, List<Mode> modes){
 
-    private Long id;
-
-    private String poguesId;
-
-    private String label;
-
-    private Context context;
-
-    private List<Mode> modes;
-
-    public static QuestionnaireRest createFromModel(Questionnaire questionnaire) {
-        QuestionnaireRest questionnaireRest = new QuestionnaireRest();
-        questionnaireRest.setId(questionnaire.getId());
-        questionnaireRest.setLabel(questionnaire.getLabel());
-        questionnaireRest.setPoguesId(questionnaire.getPoguesId());
-        questionnaireRest.setModes(questionnaire.getModes());
-        questionnaireRest.setContext(questionnaire.getContext());    
-        
-        return questionnaireRest;
+    public static QuestionnaireRest createFromModel(@NonNull Questionnaire questionnaire) {
+        return new QuestionnaireRest(questionnaire.getId(), questionnaire.getPoguesId(), questionnaire.getLabel(), questionnaire.getContext(), questionnaire.getModes());
     }
 }

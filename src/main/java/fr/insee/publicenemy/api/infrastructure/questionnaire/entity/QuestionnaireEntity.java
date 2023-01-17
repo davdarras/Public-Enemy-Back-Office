@@ -13,11 +13,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
@@ -38,7 +34,7 @@ public class QuestionnaireEntity extends BaseQuestionnaireEntity {
         this.surveyUnitData = surveyUnitData;
     }
 
-    public static QuestionnaireEntity createFromModel(String campaignLabel, Questionnaire questionnaire) {
+    public static QuestionnaireEntity createFromModel(String campaignLabel, @NonNull Questionnaire questionnaire) {
         CampaignEntity campaign = CampaignEntity.createWithLabel(campaignLabel);
         QuestionnaireEntity questionnaireEntity = new QuestionnaireEntity(questionnaire.getPoguesId(), campaign, questionnaire.getLabel(),questionnaire.getContext(), questionnaire.getModes(), questionnaire.getSurveyUnitData());
         Date date = Calendar.getInstance().getTime();
@@ -50,9 +46,9 @@ public class QuestionnaireEntity extends BaseQuestionnaireEntity {
 
     /**
      * Update questionnaire entity from questionnaire
-     * @param questionnaire
+     * @param questionnaire questionnaire to update
      */
-    public void update(Questionnaire questionnaire) {        
+    public void update(@NonNull Questionnaire questionnaire) {
         byte [] questionnaireUnitData = questionnaire.getSurveyUnitData();
         if(questionnaireUnitData != null && questionnaireUnitData.length > 0) {
             setSurveyUnitData(questionnaireUnitData);
@@ -78,9 +74,7 @@ public class QuestionnaireEntity extends BaseQuestionnaireEntity {
         if (getClass() != obj.getClass())
             return false;
         QuestionnaireEntity other = (QuestionnaireEntity) obj;
-        if (!Arrays.equals(surveyUnitData, other.surveyUnitData))
-            return false;
-        return true;
+        return Arrays.equals(surveyUnitData, other.surveyUnitData);
     }
 
     
