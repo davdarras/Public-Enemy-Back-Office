@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import fr.insee.publicenemy.api.application.exceptions.ServiceException;
+import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.LunaticJsonNotFoundException;
+import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.PoguesJsonNotFoundException;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.core.Ordered;
@@ -46,24 +48,97 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    @Autowired
-    private ApiExceptionComponent errorComponent;
+    private final ApiExceptionComponent errorComponent;
 
-    @Autowired
-    private ErrorAttributes errorAttributes;
+    private final ErrorAttributes errorAttributes;
 
-    @Autowired
-    private I18nMessageServiceImpl messageService;
+    private final I18nMessageServiceImpl messageService;
+
+    public ApiExceptionHandler(ApiExceptionComponent errorComponent, ErrorAttributes errorAttributes, I18nMessageServiceImpl messageService) {
+        this.errorComponent = errorComponent;
+        this.errorAttributes = errorAttributes;
+        this.messageService = messageService;
+    }
 
     private static final String INTERNAL_EXCEPTION_KEY = "exception.internal";
     private static final String VALIDATION_EXCEPTION_KEY = "exception.validation";
     private static final String NOTFOUND_EXCEPTION_KEY = "exception.notfound";
+
+
+    /**
+     * Handle Service Exceptions
+     *
+     * @param ex      DdiException
+     * @param request WebRequest object WebRequest
+     * @return the ApiError object
+     */
+    @ExceptionHandler({ ServiceException.class })
+    public ResponseEntity<ApiError> handleServiceException(
+            ServiceException ex,
+            WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
+        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
+        ApiError error = errorComponent.buildErrorObject(attributes, request, HttpStatus.valueOf(ex.getCode()), ex, ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getCode()));
+    }
+
+    /**
+     * Handle JSON pogues empty exception
+     *
+     * @param ex      PoguesJsonNotFoundException
+     * @param request WebRequest object WebRequest
+     * @return the ApiError object
+     */
+    @ExceptionHandler({ PoguesJsonNotFoundException.class })
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiError handlePoguesJsonNotFoundException(
+            PoguesJsonNotFoundException ex,
+            WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
+        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
+        return errorComponent.buildErrorObject(attributes, request, HttpStatus.INTERNAL_SERVER_ERROR, ex, ex.getMessage());
+    }
+
+    /**
+     * Handle JSON Lunatic empty exception
+     *
+     * @param ex      PoguesJsonNotFoundException
+     * @param request WebRequest object WebRequest
+     * @return the ApiError object
+     */
+    @ExceptionHandler({ LunaticJsonNotFoundException.class })
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiError handleLunaticJsonNotFoundException(
+            LunaticJsonNotFoundException ex,
+            WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
+        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
+        return errorComponent.buildErrorObject(attributes, request, HttpStatus.INTERNAL_SERVER_ERROR, ex, ex.getMessage());
+    }
+
+    /**
+     * Handle API Exception. .
+     *
+     * @param ex      API Exception
+     * @param request WebRequest object WebRequest
+     * @return the ApiError object
+     */
+    @ExceptionHandler({ ApiException.class })
+    public ResponseEntity<ApiError> handleApiException(
+            ApiException ex,
+            WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
+        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
+        ApiError error = errorComponent.buildErrorObject(attributes, request, ex);
+        return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getStatusCode()));
+    }
+
     /**
      * Handle MissingServletRequestParameterException. Triggered when a 'required'
      * request parameter is missing.
      *
      * @param ex      MissingServletRequestParameterException
-     * @param request WebRequest
+     * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
@@ -71,6 +146,7 @@ public class ApiExceptionHandler {
     protected ApiError handleMissingServletRequestParameter(
             MissingServletRequestParameterException ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         return buildErrorObject(request, HttpStatus.BAD_REQUEST, ex, null);
     }
 
@@ -79,7 +155,7 @@ public class ApiExceptionHandler {
      * invalid as well.
      *
      * @param ex      HttpMediaTypeNotSupportedException
-     * @param request WebRequest
+     * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.UNSUPPORTED_MEDIA_TYPE)
@@ -87,6 +163,7 @@ public class ApiExceptionHandler {
     protected ApiError handleHttpMediaTypeNotSupported(
             HttpMediaTypeNotSupportedException ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         return buildErrorObject(request, HttpStatus.UNSUPPORTED_MEDIA_TYPE, ex,
                 messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
@@ -97,7 +174,7 @@ public class ApiExceptionHandler {
      *
      * @param ex      the MethodArgumentNotValidException that is thrown when @Valid
      *                validation fails
-     * @param request WebRequest
+     * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
@@ -105,6 +182,7 @@ public class ApiExceptionHandler {
     protected ApiError handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         ApiError apiError = buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
                 messageService.getMessage(VALIDATION_EXCEPTION_KEY));
 
@@ -131,7 +209,7 @@ public class ApiExceptionHandler {
      * fails.
      *
      * @param ex      the ConstraintViolationException
-     * @param request
+     * @param request WebRequest object
      * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
@@ -139,6 +217,7 @@ public class ApiExceptionHandler {
     protected ApiError handleConstraintViolation(
             jakarta.validation.ConstraintViolationException ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         ApiError error = buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
                 messageService.getMessage(VALIDATION_EXCEPTION_KEY));
         List<ApiFieldError> violations = new ArrayList<>();
@@ -154,13 +233,14 @@ public class ApiExceptionHandler {
      * malformed.
      *
      * @param ex      HttpMessageNotReadableException
-     * @param request WebRequest
+     * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(HttpMessageNotReadableException.class)
     protected ApiError handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         ServletWebRequest servletWebRequest = (ServletWebRequest) request;
         log.info("{} to {}", servletWebRequest.getHttpMethod(), servletWebRequest.getRequest().getServletPath());
         return buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
@@ -171,13 +251,14 @@ public class ApiExceptionHandler {
      * Handle HttpMessageNotWritableException.
      *
      * @param ex      HttpMessageNotWritableException
-     * @param request WebRequest
+     * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(HttpMessageNotWritableException.class)
     protected ApiError handleHttpMessageNotWritable(HttpMessageNotWritableException ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         return buildErrorObject(request, HttpStatus.INTERNAL_SERVER_ERROR, ex,
                 messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
@@ -185,30 +266,32 @@ public class ApiExceptionHandler {
     /**
      * Handle NoHandlerFoundException.
      *
-     * @param ex
-     * @param request
-     * @return
+     * @param ex NoHandlerFoundException
+     * @param request WebRequest object
+     * @return the ApiError object
      */
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(NoHandlerFoundException.class)
     protected ApiError handleNoHandlerFoundException(
             NoHandlerFoundException ex, WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         return buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
                 messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
     /**
      * Handle jakarta.persistence.EntityNotFoundException
-     * 
-     * @param ex
-     * @param request
-     * @return
+     *
+     * @param ex EntityNotFoundException
+     * @param request WebRequest object
+     * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
     protected ApiError handleEntityNotFound(jakarta.persistence.EntityNotFoundException ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         return buildErrorObject(request, HttpStatus.NOT_FOUND, ex,
                 messageService.getMessage(NOTFOUND_EXCEPTION_KEY));
     }
@@ -218,13 +301,14 @@ public class ApiExceptionHandler {
      * causes.
      *
      * @param ex      the DataIntegrityViolationException
-     * @param request
+     * @param request WebRequest object
      * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(DataIntegrityViolationException.class)
     protected ApiError handleDataIntegrityViolation(DataIntegrityViolationException ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         ApiError error = buildErrorObject(request, HttpStatus.INTERNAL_SERVER_ERROR, ex,
                 messageService.getMessage(INTERNAL_EXCEPTION_KEY));
         if (ex.getCause() instanceof ConstraintViolationException) {
@@ -238,13 +322,14 @@ public class ApiExceptionHandler {
      * Handle Exception, handle generic Exception.class
      *
      * @param ex      the Exception
-     * @param request
+     * @param request WebRequest object
      * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     protected ApiError handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         return buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
                 messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
@@ -252,6 +337,7 @@ public class ApiExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingPathVariableException.class)
     public ApiError handleMissingPathVariableException(WebRequest request, MissingPathVariableException ex) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         return buildErrorObject(request, HttpStatus.BAD_REQUEST, ex, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
@@ -259,7 +345,7 @@ public class ApiExceptionHandler {
      * Handle Exception. .
      *
      * @param ex      Exception
-     * @param request WebRequest
+     * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
@@ -267,6 +353,7 @@ public class ApiExceptionHandler {
     protected ApiError handleException(
             Exception ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         return buildErrorObject(request, HttpStatus.INTERNAL_SERVER_ERROR, ex,
                 messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
@@ -275,7 +362,7 @@ public class ApiExceptionHandler {
      * Handle RepositoryEntity not found Exception. .
      *
      * @param ex      Exception
-     * @param request WebRequest
+     * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
@@ -283,32 +370,17 @@ public class ApiExceptionHandler {
     public ApiError handleRepositoryEntityNotFoundException(
             RepositoryEntityNotFoundException ex,
             WebRequest request) {
+        log.error(messageService.getMessage("exception.occurred"), ex);
         Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
         return errorComponent.buildErrorObject(attributes, request, HttpStatus.NOT_FOUND, ex);
     }
 
     /**
-     * Handle API Exception. .
-     *
-     * @param ex      Exception
-     * @param request WebRequest
-     * @return the ApiError object
-     */
-    @ExceptionHandler({ ApiException.class })
-    public ResponseEntity<ApiError> handleApiException(
-            ApiException ex,
-            WebRequest request) {
-        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        ApiError error = errorComponent.buildErrorObject(attributes, request, ex);
-        return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getStatusCode()));
-    }
-
-    /**
      * Build ApiError object
-     * @param request
-     * @param status
-     * @param ex
-     * @param message
+     * @param request WebRequest object
+     * @param status exception status
+     * @param ex Exception
+     * @param message error message
      * @return error object used as json response 
      */
     private ApiError buildErrorObject(WebRequest request, HttpStatus status, Exception ex, String message) {

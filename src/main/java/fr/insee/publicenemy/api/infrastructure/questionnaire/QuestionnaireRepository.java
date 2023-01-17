@@ -22,9 +22,9 @@ public class QuestionnaireRepository implements QuestionnairePort {
 
     /**
      * Constructor
-     * @param campaignEntityRepository
-     * @param questionnaireEntityRepository
-     * @param questionnaireEntitySummaryRepository
+     * @param campaignEntityRepository campaign repository
+     * @param questionnaireEntityRepository questionnaire repository
+     * @param questionnaireEntitySummaryRepository questionnaire summary repository
      */
     public QuestionnaireRepository(CampaignEntityRepository campaignEntityRepository,
             QuestionnaireEntityRepository questionnaireEntityRepository, 
@@ -42,7 +42,7 @@ public class QuestionnaireRepository implements QuestionnairePort {
     @Override
     public Questionnaire getQuestionnaire(Long questionnaireId) {
         QuestionnaireEntitySummary questionnaireEntity = questionnaireEntitySummaryRepository.findById(questionnaireId)
-                .orElseThrow(() -> new  RepositoryEntityNotFoundException("Questionnaire not found"));
+                .orElseThrow(() -> new RepositoryEntityNotFoundException("Questionnaire not found"));
         return questionnaireEntity.toModel();
     }
 

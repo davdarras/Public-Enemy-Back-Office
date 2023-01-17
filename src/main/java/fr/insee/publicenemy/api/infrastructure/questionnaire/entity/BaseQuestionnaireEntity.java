@@ -23,11 +23,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
@@ -89,7 +85,7 @@ public class BaseQuestionnaireEntity {
         return questionnaire;
     }
 
-    public static BaseQuestionnaireEntity createFromModel(String campaignLabel, Questionnaire questionnaire) {
+    public static BaseQuestionnaireEntity createFromModel(String campaignLabel, @NonNull Questionnaire questionnaire) {
         CampaignEntity campaign = CampaignEntity.createWithLabel(campaignLabel);
         BaseQuestionnaireEntity questionnaireEntity = new BaseQuestionnaireEntity(questionnaire.getPoguesId(), campaign, questionnaire.getLabel(),questionnaire.getContext(), questionnaire.getModes());
         Date date = Calendar.getInstance().getTime();
@@ -159,11 +155,8 @@ public class BaseQuestionnaireEntity {
         } else if (!creationDate.equals(other.creationDate))
             return false;
         if (updatedDate == null) {
-            if (other.updatedDate != null)
-                return false;
-        } else if (!updatedDate.equals(other.updatedDate))
-            return false;
-        return true;
+            return other.updatedDate == null;
+        } else return updatedDate.equals(other.updatedDate);
     }
 
     

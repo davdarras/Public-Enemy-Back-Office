@@ -15,7 +15,6 @@ import java.util.Set;
 /**
  * Listener Spring loads when Spring Boot is starting on
  * ApplicationEnvironmentPreparedEvent event
- *
  * Display props in logs
  *
  */

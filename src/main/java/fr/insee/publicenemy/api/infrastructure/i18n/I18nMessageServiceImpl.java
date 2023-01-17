@@ -2,7 +2,6 @@ package fr.insee.publicenemy.api.infrastructure.i18n;
 
 import java.util.Locale;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -13,8 +12,11 @@ import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 @Component
 public class I18nMessageServiceImpl implements I18nMessagePort {
 
-    @Autowired
-    private MessageSource messageSource;
+    private final MessageSource messageSource;
+
+    public I18nMessageServiceImpl(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
 
     public String getMessage(String id) {
         return getMessage(id, null);

@@ -8,9 +8,9 @@ import fr.insee.publicenemy.api.application.domain.model.Mode;
 public interface EnoServicePort {
     /**
      * Retrieve content as JSON Lunatic format from ENO 
-     * @param ddi
-     * @param context
-     * @param mode
+     * @param ddi ddi content
+     * @param context insee context
+     * @param mode questionnaire mode
      * @return Json Lunatic
      */
     JsonLunatic getJsonLunatic(Ddi ddi, Context context, Mode mode);

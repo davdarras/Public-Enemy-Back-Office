@@ -55,11 +55,8 @@ public class CampaignEntity {
         } else if (!id.equals(other.id))
             return false;
         if (label == null) {
-            if (other.label != null)
-                return false;
-        } else if (!label.equals(other.label))
-            return false;
-        return true;
+            return other.label == null;
+        } else return label.equals(other.label);
     }
 
     

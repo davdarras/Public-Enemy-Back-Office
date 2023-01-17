@@ -1,7 +1,11 @@
 package fr.insee.publicenemy.api.infrastructure.ddi;
 
+import fr.insee.publicenemy.api.application.exceptions.ServiceException;
+import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.LunaticJsonNotFoundException;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
@@ -14,6 +18,7 @@ import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.ports.EnoServicePort;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Service
 @Slf4j
@@ -28,10 +33,10 @@ public class EnoServiceImpl implements EnoServicePort {
     }
 
     @Override
-    public JsonLunatic getJsonLunatic(Ddi ddi, Context context, Mode mode) {    
+    public JsonLunatic getJsonLunatic(@NonNull Ddi ddi, @NonNull Context context, @NonNull Mode mode) {
 
         MultipartBodyBuilder resourceBuilder = new MultipartBodyBuilder();
-        Resource ddiResource = new FileNameAwareByteArrayResource("resource.json", ddi.getContent(), "description");
+        Resource ddiResource = new FileNameAwareByteArrayResource("resource.json", ddi.content(), "description");
         resourceBuilder.part("in", ddiResource);
         
         byte[] lunaticJsonBytes = webClient.post().uri(enoUrl + "/questionnaire/{context}/lunatic-json/{mode}", context.name(), mode.name())
@@ -39,12 +44,12 @@ public class EnoServiceImpl implements EnoServicePort {
             .contentType(MediaType.MULTIPART_FORM_DATA)
             .body(BodyInserters.fromMultipartData(resourceBuilder.build()))
             .retrieve()
-            .onStatus(status-> status.is4xxClientError()||status.is5xxServerError(), clientResponse -> {
-                log.error("Error retrieving DDI - ENO response: "+ clientResponse.statusCode().value());
-                clientResponse.toEntity(String.class).subscribe(s->log.error(s.getBody()));
-                return clientResponse.createException();
-            })
-            .bodyToMono(byte[].class).block();
+            .onStatus(
+                    HttpStatusCode::isError,
+                    response -> response.bodyToMono(String.class)
+                            .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
+            )
+            .bodyToMono(byte[].class).blockOptional().orElseThrow(() -> new LunaticJsonNotFoundException(ddi.poguesId(), context, mode));
 
         return new JsonLunatic(lunaticJsonBytes);
     } 

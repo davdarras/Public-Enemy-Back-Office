@@ -4,5 +4,5 @@ public enum Mode {
     CAWI,
     CATI,
     CAPI,
-    PAPI;
+    PAPI
 }
