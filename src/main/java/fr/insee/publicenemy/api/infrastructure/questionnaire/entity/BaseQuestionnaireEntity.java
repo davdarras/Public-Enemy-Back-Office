@@ -40,10 +40,6 @@ public class BaseQuestionnaireEntity {
     @NotNull
     private String poguesId;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "campaign_id", referencedColumnName = "id")
-    private CampaignEntity campaign;
-
     @Column
     @NotNull
     private String label;
@@ -66,21 +62,19 @@ public class BaseQuestionnaireEntity {
     @Temporal(TemporalType.DATE)
     private Date updatedDate;
 
-    BaseQuestionnaireEntity(String poguesId, CampaignEntity campaign, String label, Context context, List<Mode> modes) {
+    BaseQuestionnaireEntity(String poguesId, String label, Context context, List<Mode> modes) {
         this.poguesId = poguesId;
         this.label = label;
         this.context = context;
         this.modes = modes;
-        this.campaign = campaign;
     }
 
     public Questionnaire toModel() {
         return new Questionnaire(getId(), getPoguesId(), getLabel(), getContext(), getModes(), null, getUpdatedDate());
     }
 
-    public static BaseQuestionnaireEntity createFromModel(String campaignLabel, @NonNull Questionnaire questionnaire) {
-        CampaignEntity campaign = CampaignEntity.createWithLabel(campaignLabel);
-        BaseQuestionnaireEntity questionnaireEntity = new BaseQuestionnaireEntity(questionnaire.poguesId(), campaign, questionnaire.label(),questionnaire.context(), questionnaire.modes());
+    public static BaseQuestionnaireEntity createFromModel(@NonNull Questionnaire questionnaire) {
+        BaseQuestionnaireEntity questionnaireEntity = new BaseQuestionnaireEntity(questionnaire.getPoguesId(), questionnaire.getLabel(),questionnaire.getContext(), questionnaire.getModes());
         Date date = Calendar.getInstance().getTime();
     
         questionnaireEntity.setCreationDate(date);
@@ -94,7 +88,6 @@ public class BaseQuestionnaireEntity {
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((poguesId == null) ? 0 : poguesId.hashCode());
-        result = prime * result + ((campaign == null) ? 0 : campaign.hashCode());
         result = prime * result + ((label == null) ? 0 : label.hashCode());
         result = prime * result + ((context == null) ? 0 : context.hashCode());
         result = prime * result + ((modes == null) ? 0 : modes.hashCode());
@@ -121,11 +114,6 @@ public class BaseQuestionnaireEntity {
             if (other.poguesId != null)
                 return false;
         } else if (!poguesId.equals(other.poguesId))
-            return false;
-        if (campaign == null) {
-            if (other.campaign != null)
-                return false;
-        } else if (!campaign.equals(other.campaign))
             return false;
         if (label == null) {
             if (other.label != null)
