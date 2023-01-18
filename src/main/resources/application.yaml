@@ -48,7 +48,7 @@ spring:
   jpa:
     open-in-view: false
   codec:
-    max-in-memory-size: 5000KB
+    max-in-memory-size: 10000KB
   # to make springfox work
   mvc:
     pathmatch:

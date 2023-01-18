@@ -16,20 +16,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class QuestionnaireRepository implements QuestionnairePort {
 
-    private final CampaignEntityRepository campaignEntityRepository;
     private final QuestionnaireEntityRepository questionnaireEntityRepository;
     private final QuestionnaireEntitySummaryRepository questionnaireEntitySummaryRepository;
 
     /**
      * Constructor
-     * @param campaignEntityRepository campaign repository
      * @param questionnaireEntityRepository questionnaire repository
      * @param questionnaireEntitySummaryRepository questionnaire summary repository
      */
-    public QuestionnaireRepository(CampaignEntityRepository campaignEntityRepository,
-            QuestionnaireEntityRepository questionnaireEntityRepository, 
+    public QuestionnaireRepository(QuestionnaireEntityRepository questionnaireEntityRepository,
             QuestionnaireEntitySummaryRepository questionnaireEntitySummaryRepository) {
-        this.campaignEntityRepository = campaignEntityRepository;
         this.questionnaireEntityRepository = questionnaireEntityRepository;
         this.questionnaireEntitySummaryRepository = questionnaireEntitySummaryRepository;
     }
@@ -48,8 +44,7 @@ public class QuestionnaireRepository implements QuestionnairePort {
 
     @Override
     public Questionnaire addQuestionnaire(Questionnaire questionnaire) {
-        long campaignCount = campaignEntityRepository.count();
-        QuestionnaireEntity questionnaireEntity = QuestionnaireEntity.createFromModel("Campagne " + campaignCount, questionnaire);
+        QuestionnaireEntity questionnaireEntity = QuestionnaireEntity.createFromModel(questionnaire);
         questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
         return questionnaireEntity.toModel();
     }

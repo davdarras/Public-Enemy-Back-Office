@@ -29,14 +29,13 @@ public class QuestionnaireEntity extends BaseQuestionnaireEntity {
     @NotNull
     private byte[] surveyUnitData;
 
-    public QuestionnaireEntity(String questionnaireId, CampaignEntity campaign, String label, Context context, List<Mode> modes, byte[] surveyUnitData) {
-        super(questionnaireId, campaign, label, context, modes);
+    public QuestionnaireEntity(String questionnaireId, String label, Context context, List<Mode> modes, byte[] surveyUnitData) {
+        super(questionnaireId, label, context, modes);
         this.surveyUnitData = surveyUnitData;
     }
 
-    public static QuestionnaireEntity createFromModel(String campaignLabel, @NonNull Questionnaire questionnaire) {
-        CampaignEntity campaign = CampaignEntity.createWithLabel(campaignLabel);
-        QuestionnaireEntity questionnaireEntity = new QuestionnaireEntity(questionnaire.poguesId(), campaign, questionnaire.label(),questionnaire.context(), questionnaire.modes(), questionnaire.surveyUnitData());
+    public static QuestionnaireEntity createFromModel(@NonNull Questionnaire questionnaire) {
+        QuestionnaireEntity questionnaireEntity = new QuestionnaireEntity(questionnaire.getPoguesId(), questionnaire.getLabel(),questionnaire.getContext(), questionnaire.getModes(), questionnaire.getSurveyUnitData());
         Date date = Calendar.getInstance().getTime();
     
         questionnaireEntity.setCreationDate(date);
