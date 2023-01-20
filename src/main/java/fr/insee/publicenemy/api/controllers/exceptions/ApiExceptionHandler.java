@@ -9,8 +9,6 @@ import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.LunaticJsonNotFoun
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.PoguesJsonNotFoundException;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +23,6 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -43,7 +40,6 @@ import lombok.extern.slf4j.Slf4j;
  * Handle API exceptions for project
  * Do not work on exceptions occuring before/outside controllers scope
  */
-@Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -63,7 +59,48 @@ public class ApiExceptionHandler {
     private static final String INTERNAL_EXCEPTION_KEY = "exception.internal";
     private static final String VALIDATION_EXCEPTION_KEY = "exception.validation";
     private static final String NOTFOUND_EXCEPTION_KEY = "exception.notfound";
+    private static final String EXCEPTION_OCCURRED_KEY = "exception.occurred";
 
+    /** Global method to process the catched exception
+     * @param ex Exception catched
+     * @param statusCode status code linked with this exception
+     * @param request request initiating the exception
+     * @return the apierror object with associated status code
+     */
+    private ResponseEntity<ApiError> processException(Exception ex, int statusCode, WebRequest request) {
+        return processException(ex, HttpStatus.valueOf(statusCode), request);
+    }
+
+    /** Global method to process the catched exception
+     * @param ex Exception catched
+     * @param status status linked with this exception
+     * @param request request initiating the exception
+     * @return the apierror object with associated status code
+     */
+    private ResponseEntity<ApiError> processException(Exception ex, HttpStatus status, WebRequest request) {
+        log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
+        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
+        ApiError error = errorComponent.buildErrorObject(attributes, request, status, ex, ex.getMessage());
+        return new ResponseEntity<>(error, status);
+    }
+
+    /** Global method to process the catched exception
+     * @param ex Exception catched
+     * @param status status linked with this exception
+     * @param request request initiating the exception
+     * @param overrideErrorMessage message overriding default error message from exception
+     * @return the apierror object with associated status code
+     */
+    private ResponseEntity<ApiError> processException(Exception ex, HttpStatus status, WebRequest request, String overrideErrorMessage) {
+        log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
+        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
+        String errorMessage = ex.getMessage();
+        if(overrideErrorMessage != null) {
+            errorMessage = overrideErrorMessage;
+        }
+        ApiError error = errorComponent.buildErrorObject(attributes, request, status, ex, errorMessage);
+        return new ResponseEntity<>(error, status);
+    }
 
     /**
      * Handle Service Exceptions
@@ -76,10 +113,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handleServiceException(
             ServiceException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        ApiError error = errorComponent.buildErrorObject(attributes, request, HttpStatus.valueOf(ex.getCode()), ex, ex.getMessage());
-        return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getCode()));
+        return processException(ex, ex.getCode(), request);
     }
 
     /**
@@ -90,13 +124,10 @@ public class ApiExceptionHandler {
      * @return the ApiError object
      */
     @ExceptionHandler({ PoguesJsonNotFoundException.class })
-    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiError handlePoguesJsonNotFoundException(
+    public ResponseEntity<ApiError> handlePoguesJsonNotFoundException(
             PoguesJsonNotFoundException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        return errorComponent.buildErrorObject(attributes, request, HttpStatus.INTERNAL_SERVER_ERROR, ex, ex.getMessage());
+        return processException(ex, HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
     /**
@@ -107,13 +138,10 @@ public class ApiExceptionHandler {
      * @return the ApiError object
      */
     @ExceptionHandler({ LunaticJsonNotFoundException.class })
-    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiError handleLunaticJsonNotFoundException(
+    public ResponseEntity<ApiError> handleLunaticJsonNotFoundException(
             LunaticJsonNotFoundException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        return errorComponent.buildErrorObject(attributes, request, HttpStatus.INTERNAL_SERVER_ERROR, ex, ex.getMessage());
+        return processException(ex, HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
     /**
@@ -127,7 +155,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handleApiException(
             ApiException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
+        log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
         Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
         ApiError error = errorComponent.buildErrorObject(attributes, request, ex);
         return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getStatusCode()));
@@ -141,13 +169,11 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    protected ApiError handleMissingServletRequestParameter(
+    protected ResponseEntity<ApiError> handleMissingServletRequestParameter(
             MissingServletRequestParameterException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        return buildErrorObject(request, HttpStatus.BAD_REQUEST, ex, null);
+        return processException(ex, HttpStatus.BAD_REQUEST, request);
     }
 
     /**
@@ -158,14 +184,11 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ResponseStatus(value = HttpStatus.UNSUPPORTED_MEDIA_TYPE)
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    protected ApiError handleHttpMediaTypeNotSupported(
+    protected ResponseEntity<ApiError> handleHttpMediaTypeNotSupported(
             HttpMediaTypeNotSupportedException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        return buildErrorObject(request, HttpStatus.UNSUPPORTED_MEDIA_TYPE, ex,
-                messageService.getMessage(INTERNAL_EXCEPTION_KEY));
+        return processException(ex, HttpStatus.UNSUPPORTED_MEDIA_TYPE, request, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
     /**
@@ -182,13 +205,13 @@ public class ApiExceptionHandler {
     protected ApiError handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
+        log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
         ApiError apiError = buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
                 messageService.getMessage(VALIDATION_EXCEPTION_KEY));
 
         List<ApiFieldError> errors = new ArrayList<>();
 
-        List<String> messages = apiError.getMessages();
+        List<String> messages = apiError.messages();
         for (ObjectError bindingError : ex.getBindingResult().getGlobalErrors()) {
             messages.add(messageService.getMessage(bindingError));
         }
@@ -199,7 +222,7 @@ public class ApiExceptionHandler {
             errors.add(fieldError);
         }
 
-        apiError.setFieldErrors(errors);
+        apiError.addFieldErrors(errors);
 
         return apiError;
     }
@@ -217,14 +240,14 @@ public class ApiExceptionHandler {
     protected ApiError handleConstraintViolation(
             jakarta.validation.ConstraintViolationException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
+        log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
         ApiError error = buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
                 messageService.getMessage(VALIDATION_EXCEPTION_KEY));
         List<ApiFieldError> violations = new ArrayList<>();
         for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
             violations.add(new ApiFieldError(violation.getPropertyPath().toString(), violation.getMessage()));
         }
-        error.setFieldErrors(violations);
+        error.addFieldErrors(violations);
         return error;
     }
 
@@ -236,15 +259,10 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    protected ApiError handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+    protected ResponseEntity<ApiError> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        ServletWebRequest servletWebRequest = (ServletWebRequest) request;
-        log.info("{} to {}", servletWebRequest.getHttpMethod(), servletWebRequest.getRequest().getServletPath());
-        return buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
-                messageService.getMessage(INTERNAL_EXCEPTION_KEY));
+        return processException(ex, HttpStatus.BAD_REQUEST, request, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
     /**
@@ -254,13 +272,10 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(HttpMessageNotWritableException.class)
-    protected ApiError handleHttpMessageNotWritable(HttpMessageNotWritableException ex,
+    protected ResponseEntity<ApiError> handleHttpMessageNotWritable(HttpMessageNotWritableException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        return buildErrorObject(request, HttpStatus.INTERNAL_SERVER_ERROR, ex,
-                messageService.getMessage(INTERNAL_EXCEPTION_KEY));
+        return processException(ex, HttpStatus.INTERNAL_SERVER_ERROR, request, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
     /**
@@ -271,13 +286,10 @@ public class ApiExceptionHandler {
      * @return the ApiError object
      */
 
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(NoHandlerFoundException.class)
-    protected ApiError handleNoHandlerFoundException(
+    protected ResponseEntity<ApiError> handleNoHandlerFoundException(
             NoHandlerFoundException ex, WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        return buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
-                messageService.getMessage(INTERNAL_EXCEPTION_KEY));
+        return processException(ex, HttpStatus.BAD_REQUEST, request, messageService.getMessage(NOTFOUND_EXCEPTION_KEY));
     }
 
     /**
@@ -287,13 +299,10 @@ public class ApiExceptionHandler {
      * @param request WebRequest object
      * @return the ApiError object
      */
-    @ResponseStatus(value = HttpStatus.NOT_FOUND)
     @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
-    protected ApiError handleEntityNotFound(jakarta.persistence.EntityNotFoundException ex,
+    protected ResponseEntity<ApiError> handleEntityNotFound(jakarta.persistence.EntityNotFoundException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        return buildErrorObject(request, HttpStatus.NOT_FOUND, ex,
-                messageService.getMessage(NOTFOUND_EXCEPTION_KEY));
+        return processException(ex, HttpStatus.NOT_FOUND, request, messageService.getMessage(NOTFOUND_EXCEPTION_KEY));
     }
 
     /**
@@ -308,14 +317,13 @@ public class ApiExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     protected ApiError handleDataIntegrityViolation(DataIntegrityViolationException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        ApiError error = buildErrorObject(request, HttpStatus.INTERNAL_SERVER_ERROR, ex,
-                messageService.getMessage(INTERNAL_EXCEPTION_KEY));
+        log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
         if (ex.getCause() instanceof ConstraintViolationException) {
-            error = buildErrorObject(request, HttpStatus.CONFLICT, ex,
+            return buildErrorObject(request, HttpStatus.CONFLICT, ex,
                     messageService.getMessage(INTERNAL_EXCEPTION_KEY));
         }
-        return error;
+        return buildErrorObject(request, HttpStatus.INTERNAL_SERVER_ERROR, ex,
+                messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
     /**
@@ -325,20 +333,15 @@ public class ApiExceptionHandler {
      * @param request WebRequest object
      * @return the ApiError object
      */
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    protected ApiError handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex,
+    protected ResponseEntity<ApiError> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        return buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
-                messageService.getMessage(INTERNAL_EXCEPTION_KEY));
+        return processException(ex, HttpStatus.BAD_REQUEST, request, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingPathVariableException.class)
-    public ApiError handleMissingPathVariableException(WebRequest request, MissingPathVariableException ex) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        return buildErrorObject(request, HttpStatus.BAD_REQUEST, ex, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
+    public ResponseEntity<ApiError> handleMissingPathVariableException(WebRequest request, MissingPathVariableException ex) {
+        return processException(ex, HttpStatus.BAD_REQUEST, request, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
     /**
@@ -348,14 +351,11 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler({ Exception.class })
-    protected ApiError handleException(
+    protected ResponseEntity<ApiError> handleException(
             Exception ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        return buildErrorObject(request, HttpStatus.INTERNAL_SERVER_ERROR, ex,
-                messageService.getMessage(INTERNAL_EXCEPTION_KEY));
+        return processException(ex, HttpStatus.INTERNAL_SERVER_ERROR, request, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
     /**
@@ -365,14 +365,11 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ResponseStatus(value = HttpStatus.NOT_FOUND)
     @ExceptionHandler({ RepositoryEntityNotFoundException.class })
-    public ApiError handleRepositoryEntityNotFoundException(
+    public ResponseEntity<ApiError> handleRepositoryEntityNotFoundException(
             RepositoryEntityNotFoundException ex,
             WebRequest request) {
-        log.error(messageService.getMessage("exception.occurred"), ex);
-        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        return errorComponent.buildErrorObject(attributes, request, HttpStatus.NOT_FOUND, ex);
+        return processException(ex, HttpStatus.NOT_FOUND, request);
     }
 
     /**

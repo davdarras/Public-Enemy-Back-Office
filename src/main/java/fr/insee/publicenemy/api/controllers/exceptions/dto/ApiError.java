@@ -9,41 +9,33 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 /**
  * Error object returned as JSON response to client
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ApiError {
-    private Integer status;
-
-    private String path;
-
-    private List<String> messages;
-
+public record ApiError(
+    Integer status,
+    String path,
+    List<String> messages,
     @JsonIgnore
-    private String debugMessage;
-
+    String debugMessage,
     @JsonIgnore
-    private String exceptionName;
-
+    String exceptionName,
     @JsonInclude(Include.NON_NULL)
-    private List<ApiFieldError> fieldErrors;
-
+    List<ApiFieldError> fieldErrors,
     @JsonIgnore
-    private String stackTrace;
-
+    String stackTrace,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy hh:mm:ss")
-    private Date timestamp;
+    Date timestamp) {
 
-    public void addMessage(String message) {
-        if (messages == null) {
-            messages = new ArrayList<>();
-        }
-        this.messages.add(message);
+    public ApiError(int status, String path, String errorMessage, Date timestamp) {
+        this(status, path, List.of(errorMessage), null, null,  new ArrayList<>(), null, timestamp);
+    }
+
+    public ApiError(int status, String path, String errorMessage, String stacktrace, String exceptionName, String debugMessage, Date timestamp) {
+        this(status, path, List.of(errorMessage), debugMessage, exceptionName, new ArrayList<>(), stacktrace, timestamp);
+    }
+
+    public void addFieldErrors(List<ApiFieldError> fieldErrors) {
+        this.fieldErrors.addAll(fieldErrors);
     }
 }
