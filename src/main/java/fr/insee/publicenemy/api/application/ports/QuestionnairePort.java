@@ -37,4 +37,10 @@ public interface QuestionnairePort {
      * @param id questionnaire id to delete
      */
     void deleteQuestionnaire(Long id);
+
+    /**
+     * update questionnaire synchronisation state
+     * @param questionnaire
+     */
+    Questionnaire updateQuestionnaireState(Questionnaire questionnaire);
 }

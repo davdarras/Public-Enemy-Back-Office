@@ -35,3 +35,6 @@ src/main/resources/application-prod.yaml
 
 ### VS Code ###
 .vscode/
+
+## Coverage reports
+htmlReport/
