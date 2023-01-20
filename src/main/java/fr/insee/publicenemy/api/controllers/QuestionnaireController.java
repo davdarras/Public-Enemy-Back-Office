@@ -100,7 +100,7 @@ public class QuestionnaireController {
         if(surveyUnitData != null) {
             csvContent = surveyUnitData.getBytes(); 
         }
-        Questionnaire questionnaire = questionnaireUseCase.saveQuestionnaire(id, context, csvContent);
+        Questionnaire questionnaire = questionnaireUseCase.updateQuestionnaire(id, context, csvContent);
         return QuestionnaireRest.createFromModel(questionnaire);
     }
 

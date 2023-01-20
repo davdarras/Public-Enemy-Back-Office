@@ -43,13 +43,12 @@ public class DDIUseCase {
 
     /**
      * Convert DDI with given identifier to a Lunatic questionnaire (json format)
-     * @param poguesId pogues questionnaire id
+     * @param ddi Ddi
      * @param context insee context
      * @param mode questionnaire mode
      * @return Json Lunatic
      */
-    public JsonLunatic getJsonLunatic(String poguesId, Context context, Mode mode) {
-        Ddi ddi = getDdi(poguesId);
+    public JsonLunatic getJsonLunatic(Ddi ddi, Context context, Mode mode) {
         return enoService.getJsonLunatic(ddi, context, mode);
     }
 }

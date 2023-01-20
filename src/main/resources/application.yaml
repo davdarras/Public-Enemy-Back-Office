@@ -22,10 +22,6 @@ logging:
     fr:
       insee:
         publicenemy: INFO
-    reactor:
-      netty:
-        http:
-          client: DEBUG
 
 spring:
   # DB
@@ -58,6 +54,8 @@ springfox:
     enabled: true
 
 application:
+  debug:
+    webclient: false
   proxy:
     enable: false
     url:
@@ -66,3 +64,5 @@ application:
     allowed-origins:
   pogues:
     url: https://pogues-url.insee.fr
+  queen:
+    url: https://queen-url.insee.fr

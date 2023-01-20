@@ -39,7 +39,7 @@ public class EnoServiceImpl implements EnoServicePort {
         Resource ddiResource = new FileNameAwareByteArrayResource("resource.json", ddi.content(), "description");
         resourceBuilder.part("in", ddiResource);
         
-        byte[] lunaticJsonBytes = webClient.post().uri(enoUrl + "/questionnaire/{context}/lunatic-json/{mode}", context.name(), mode.name())
+        String lunaticJson = webClient.post().uri(enoUrl + "/questionnaire/{context}/lunatic-json/{mode}", context.name(), mode.name())
             .accept(MediaType.APPLICATION_OCTET_STREAM)
             .contentType(MediaType.MULTIPART_FORM_DATA)
             .body(BodyInserters.fromMultipartData(resourceBuilder.build()))
@@ -49,8 +49,8 @@ public class EnoServiceImpl implements EnoServicePort {
                     response -> response.bodyToMono(String.class)
                             .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
             )
-            .bodyToMono(byte[].class).blockOptional().orElseThrow(() -> new LunaticJsonNotFoundException(ddi.poguesId(), context, mode));
+            .bodyToMono(String.class).blockOptional().orElseThrow(() -> new LunaticJsonNotFoundException(ddi.poguesId(), context, mode));
 
-        return new JsonLunatic(lunaticJsonBytes);
+        return new JsonLunatic(lunaticJson);
     } 
 }

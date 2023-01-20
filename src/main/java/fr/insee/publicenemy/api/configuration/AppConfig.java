@@ -1,9 +1,7 @@
 package fr.insee.publicenemy.api.configuration;
 
-import java.net.InetSocketAddress;
-import java.net.ProxySelector;
-import java.net.http.HttpClient;
-
+import io.netty.handler.logging.LogLevel;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -13,10 +11,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.JdkClientHttpConnector;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.transport.ProxyProvider;
+import reactor.netty.transport.logging.AdvancedByteBufFormat;
 
 
 @Configuration
@@ -24,6 +25,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(basePackages = { "fr.insee.publicenemy.api" })
 @EnableTransactionManagement
 @EnableCaching
+@Slf4j
 public class AppConfig implements WebMvcConfigurer {
 
     /**
@@ -36,14 +38,21 @@ public class AppConfig implements WebMvcConfigurer {
     @Bean
     @ConditionalOnProperty(name="application.proxy.enable", havingValue="true")
     public WebClient webClientProxy(@Value("${application.proxy.url}") String proxyUrl, 
-            @Value("${application.proxy.port}") Integer proxyPort, 
+            @Value("${application.proxy.port}") Integer proxyPort, @Value("${application.debug.webclient}") boolean debug,
             WebClient.Builder builder) {
-        HttpClient httpClient = HttpClient.newBuilder()
-            .proxy(ProxySelector.of(new InetSocketAddress(proxyUrl, proxyPort)))
-            .build();
-        
+        HttpClient httpClient = HttpClient.create().tcpConfiguration(tcpClient -> tcpClient
+                        .proxy(proxy -> proxy
+                                .type(ProxyProvider.Proxy.HTTP)
+                                .host(proxyUrl)
+                                .port(proxyPort)));
+
+        if(debug) {
+            httpClient = httpClient.wiretap("reactor.netty.http.client.HttpClient",
+                    LogLevel.DEBUG, AdvancedByteBufFormat.TEXTUAL);
+        }
+
         builder
-            .clientConnector(new JdkClientHttpConnector(httpClient))
+            .clientConnector(new ReactorClientHttpConnector(httpClient))
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE) 
             .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         return builder.build();

@@ -2,13 +2,13 @@ package fr.insee.publicenemy.api.infrastructure.questionnaire;
 
 import java.util.List;
 
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.entity.QuestionnaireEntity;
-import fr.insee.publicenemy.api.infrastructure.questionnaire.entity.QuestionnaireEntitySummary;
 import lombok.extern.slf4j.Slf4j;
 
 @Repository
@@ -17,51 +17,61 @@ import lombok.extern.slf4j.Slf4j;
 public class QuestionnaireRepository implements QuestionnairePort {
 
     private final QuestionnaireEntityRepository questionnaireEntityRepository;
-    private final QuestionnaireEntitySummaryRepository questionnaireEntitySummaryRepository;
+
+    private final I18nMessagePort messageService;
+
+    private static final String QUESTIONNAIRE_NOT_FOUND_KEY = "questionnaire.notfound";
 
     /**
      * Constructor
      * @param questionnaireEntityRepository questionnaire repository
-     * @param questionnaireEntitySummaryRepository questionnaire summary repository
      */
-    public QuestionnaireRepository(QuestionnaireEntityRepository questionnaireEntityRepository,
-            QuestionnaireEntitySummaryRepository questionnaireEntitySummaryRepository) {
+    public QuestionnaireRepository(QuestionnaireEntityRepository questionnaireEntityRepository, I18nMessagePort messageService) {
         this.questionnaireEntityRepository = questionnaireEntityRepository;
-        this.questionnaireEntitySummaryRepository = questionnaireEntitySummaryRepository;
+        this.messageService = messageService;
     }
 
     @Override
     public List<Questionnaire> getQuestionnaires() {
-        return questionnaireEntitySummaryRepository.findAll().stream().map(QuestionnaireEntitySummary::toModel).toList();
+        return questionnaireEntityRepository.findAll().stream().map(QuestionnaireEntity::toModel).toList();
     }
 
     @Override
     public Questionnaire getQuestionnaire(Long questionnaireId) {
-        QuestionnaireEntitySummary questionnaireEntity = questionnaireEntitySummaryRepository.findById(questionnaireId)
-                .orElseThrow(() -> new RepositoryEntityNotFoundException("Questionnaire not found"));
+        QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaireId)
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
         return questionnaireEntity.toModel();
     }
 
     @Override
     public Questionnaire addQuestionnaire(Questionnaire questionnaire) {
-        QuestionnaireEntity questionnaireEntity = QuestionnaireEntity.createFromModel(questionnaire);
+        QuestionnaireEntity questionnaireEntity = QuestionnaireEntity.createEntity(questionnaire);
         questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
         return questionnaireEntity.toModel();
     }
 
     @Override
     public Questionnaire updateQuestionnaire(Questionnaire questionnaire) {
-        QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaire.id())
-                .orElseThrow(() -> new  RepositoryEntityNotFoundException("Questionnaire not found"));
+        QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaire.getId())
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
 
         questionnaireEntity.update(questionnaire);
         questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
-        log.error(questionnaireEntity.getContext().toString());
         return questionnaireEntity.toModel();
     }
 
     @Override
     public void deleteQuestionnaire(Long id) {
         questionnaireEntityRepository.deleteById(id);
+    }
+
+    @Override
+    public Questionnaire updateQuestionnaireState(Questionnaire questionnaire) {
+        QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaire.getId())
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
+
+        questionnaireEntity.updateState(questionnaire);
+        questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
+        return questionnaireEntity.toModel();
     }
 } 
