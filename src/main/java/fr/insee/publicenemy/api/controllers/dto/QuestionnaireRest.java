@@ -13,6 +13,6 @@ import lombok.NonNull;
 public record QuestionnaireRest(Long id, String poguesId, String label, Context context, List<Mode> modes){
 
     public static QuestionnaireRest createFromModel(@NonNull Questionnaire questionnaire) {
-        return new QuestionnaireRest(questionnaire.getId(), questionnaire.getPoguesId(), questionnaire.getLabel(), questionnaire.getContext(), questionnaire.getModes());
+        return new QuestionnaireRest(questionnaire.id(), questionnaire.poguesId(), questionnaire.label(), questionnaire.context(), questionnaire.modes());
     }
 }

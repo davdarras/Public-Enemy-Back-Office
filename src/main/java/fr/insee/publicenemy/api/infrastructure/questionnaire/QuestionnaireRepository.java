@@ -56,7 +56,7 @@ public class QuestionnaireRepository implements QuestionnairePort {
 
     @Override
     public Questionnaire updateQuestionnaire(Questionnaire questionnaire) {
-        QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaire.getId())
+        QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaire.id())
                 .orElseThrow(() -> new  RepositoryEntityNotFoundException("Questionnaire not found"));
 
         questionnaireEntity.update(questionnaire);

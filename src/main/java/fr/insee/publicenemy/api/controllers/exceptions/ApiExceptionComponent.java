@@ -45,29 +45,24 @@ public class ApiExceptionComponent {
     public ApiError buildErrorObject(Map<String, Object> attributes, WebRequest request, HttpStatus status,
             Exception ex, String errorMessage) {
 
-        ApiError errorObject = new ApiError();
-
         String path = ((ServletWebRequest) request).getRequest().getRequestURI();
-        errorObject.setTimestamp((Date) attributes.get("timestamp"));
-        errorObject.setPath(path);
-        errorObject.setStatus(status.value());
+        Date timestamp = ((Date) attributes.get("timestamp"));
 
         if (errorMessage == null || errorMessage.isEmpty()) {
             errorMessage = status.getReasonPhrase();
         }
-        errorObject.addMessage(errorMessage);
-        // Ajout de l'exception
-        if (ex != null) {
-            StringWriter stackTrace = new StringWriter();
-            ex.printStackTrace(new PrintWriter(stackTrace));
-            stackTrace.flush();
 
-            errorObject.setStackTrace(stackTrace.toString());
-            errorObject.setExceptionName(ex.getClass().getName());
-            errorObject.setDebugMessage(ex.getLocalizedMessage());
+        if (ex == null) {
+            return new ApiError(status.value(), path, errorMessage, timestamp);
         }
 
-        return errorObject;
+        // Adding exception
+        StringWriter stackTrace = new StringWriter();
+        ex.printStackTrace(new PrintWriter(stackTrace));
+        stackTrace.flush();
+
+        return new ApiError(status.value(), path, errorMessage, stackTrace.toString(), ex.getClass().getName(),
+                ex.getLocalizedMessage(), timestamp);
     }
 
     /**
@@ -79,8 +74,7 @@ public class ApiExceptionComponent {
      */
     public ApiError buildErrorObject(Map<String, Object> attributes, WebRequest request, ApiException ex) {
         ApiError errorObject = buildErrorObject(attributes, request, HttpStatus.valueOf(ex.getStatusCode()), ex);
-        errorObject.setFieldErrors(ex.getErrors());
-        errorObject.addMessage(ex.getMessage());
+        errorObject.addFieldErrors(ex.getErrors());
         return errorObject;
     }
 }

@@ -75,19 +75,12 @@ public class BaseQuestionnaireEntity {
     }
 
     public Questionnaire toModel() {
-        Questionnaire questionnaire = new Questionnaire();
-        questionnaire.setId(getId());
-        questionnaire.setPoguesId(getPoguesId());
-        questionnaire.setLabel(getLabel());
-        questionnaire.setContext(getContext());
-        questionnaire.setModes(getModes());
-        questionnaire.setUpdatedDate(getUpdatedDate());
-        return questionnaire;
+        return new Questionnaire(getId(), getPoguesId(), getLabel(), getContext(), getModes(), null, getUpdatedDate());
     }
 
     public static BaseQuestionnaireEntity createFromModel(String campaignLabel, @NonNull Questionnaire questionnaire) {
         CampaignEntity campaign = CampaignEntity.createWithLabel(campaignLabel);
-        BaseQuestionnaireEntity questionnaireEntity = new BaseQuestionnaireEntity(questionnaire.getPoguesId(), campaign, questionnaire.getLabel(),questionnaire.getContext(), questionnaire.getModes());
+        BaseQuestionnaireEntity questionnaireEntity = new BaseQuestionnaireEntity(questionnaire.poguesId(), campaign, questionnaire.label(),questionnaire.context(), questionnaire.modes());
         Date date = Calendar.getInstance().getTime();
     
         questionnaireEntity.setCreationDate(date);
