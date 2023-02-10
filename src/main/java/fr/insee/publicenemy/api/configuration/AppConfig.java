@@ -40,11 +40,11 @@ public class AppConfig implements WebMvcConfigurer {
     public WebClient webClientProxy(@Value("${application.proxy.url}") String proxyUrl, 
             @Value("${application.proxy.port}") Integer proxyPort, @Value("${application.debug.webclient}") boolean debug,
             WebClient.Builder builder) {
-        HttpClient httpClient = HttpClient.create().tcpConfiguration(tcpClient -> tcpClient
-                        .proxy(proxy -> proxy
-                                .type(ProxyProvider.Proxy.HTTP)
-                                .host(proxyUrl)
-                                .port(proxyPort)));
+        HttpClient httpClient = HttpClient.create()
+                .proxy(proxy -> proxy
+                .type(ProxyProvider.Proxy.HTTP)
+                .host(proxyUrl)
+                .port(proxyPort));
 
         if(debug) {
             httpClient = httpClient.wiretap("reactor.netty.http.client.HttpClient",

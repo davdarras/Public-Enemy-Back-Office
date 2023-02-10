@@ -1,15 +1,16 @@
 package fr.insee.publicenemy.api.application.domain.model;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 @Getter
+@Setter
 @AllArgsConstructor
 public class Questionnaire {
     private Long id;
@@ -26,22 +27,34 @@ public class Questionnaire {
     private boolean isSynchronized;
 
     public Questionnaire(String poguesId, String label, Context context, List<Mode> modes, byte[] surveyUnitData) {
-        this(null, poguesId, label, context, QuestionnaireMode.toModel(modes), surveyUnitData, false);
+        this.poguesId = poguesId;
+        this.label = label;
+        this.context = context;
+        this.questionnaireModes = QuestionnaireMode.toModel(modes);
+        this.surveyUnitData = surveyUnitData;
+        this.isSynchronized = false;
     }
 
     public Questionnaire(Long id, Context context, byte[] surveyUnitData) {
-        this(id, null, null, context, null, surveyUnitData, false);
+        this.id = id;
+        this.context = context;
+        this.surveyUnitData = surveyUnitData;
+        this.isSynchronized = false;
     }
 
     public Questionnaire(String poguesId, String label, List<Mode> modes) {
-        this(null, poguesId, label, null, QuestionnaireMode.toModel(modes), null, false);
+        this.poguesId = poguesId;
+        this.label = label;
+        this.questionnaireModes = QuestionnaireMode.toModel(modes);
+        this.isSynchronized = false;
     }
     public Questionnaire(Ddi ddi, Context context, byte[] surveyUnitData) {
-        this(null, ddi.poguesId(), ddi.label(), context, QuestionnaireMode.toModel(ddi.modes()), surveyUnitData, false);
-    }
-
-    public void setSynchronized(boolean isSynchronized) {
-        this.isSynchronized = isSynchronized;
+        this.poguesId = ddi.poguesId();
+        this.label = ddi.label();
+        this.context = context;
+        this.questionnaireModes = QuestionnaireMode.toModel(ddi.modes());
+        this.surveyUnitData = surveyUnitData;
+        this.isSynchronized = false;
     }
 
     @Override
@@ -49,7 +62,12 @@ public class Questionnaire {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Questionnaire that = (Questionnaire) o;
-        return isSynchronized == that.isSynchronized && Objects.equals(id, that.id) && Objects.equals(poguesId, that.poguesId) && Objects.equals(label, that.label) && context == that.context && Objects.equals(questionnaireModes, that.questionnaireModes) && Arrays.equals(surveyUnitData, that.surveyUnitData);
+        return isSynchronized == that.isSynchronized
+                && Objects.equals(id, that.id)
+                && Objects.equals(poguesId, that.poguesId)
+                && Objects.equals(label, that.label) && context == that.context
+                && Objects.equals(questionnaireModes, that.questionnaireModes)
+                && Arrays.equals(surveyUnitData, that.surveyUnitData);
     }
 
     @Override

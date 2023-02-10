@@ -1,8 +1,5 @@
 package fr.insee.publicenemy.api.infrastructure.questionnaire.entity;
 
-import java.io.Serializable;
-import java.util.*;
-
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
@@ -11,7 +8,9 @@ import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNot
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.Type;
+
+import java.io.Serializable;
+import java.util.*;
 
 @Getter
 @Setter
@@ -117,7 +116,7 @@ public class QuestionnaireEntity implements Serializable {
      */
     public void updateState(@NotNull Questionnaire questionnaire) {
         this.isSynchronized = questionnaire.isSynchronized();
-        questionnaire.getQuestionnaireModes().stream()
+        questionnaire.getQuestionnaireModes()
                 .forEach(questionnaireMode -> {
                     QuestionnaireModeEntity questionnaireModeEntity = getQuestionnaireModeEntity(questionnaireMode.getMode());
                     questionnaireModeEntity.setSynchronisationState(questionnaireMode.getSynchronisationState());
@@ -144,18 +143,20 @@ public class QuestionnaireEntity implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         QuestionnaireEntity that = (QuestionnaireEntity) o;
-        return Objects.equals(id, that.id) && Objects.equals(poguesId, that.poguesId)
+        return isSynchronized == that.isSynchronized && Objects.equals(id, that.id)
+                && Objects.equals(poguesId, that.poguesId)
                 && Objects.equals(label, that.label) && context == that.context
                 && Objects.equals(modeEntities, that.modeEntities)
                 && Objects.equals(creationDate, that.creationDate)
                 && Objects.equals(updatedDate, that.updatedDate)
-                && Objects.equals(surveyUnitData, that.surveyUnitData)
-                && Objects.equals(isSynchronized, that.isSynchronized);
+                && Arrays.equals(surveyUnitData, that.surveyUnitData);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, poguesId, label, context, modeEntities, creationDate, updatedDate, surveyUnitData, isSynchronized);
+        int result = Objects.hash(id, poguesId, label, context, modeEntities, creationDate, updatedDate, isSynchronized);
+        result = 31 * result + Arrays.hashCode(surveyUnitData);
+        return result;
     }
 
     @Override

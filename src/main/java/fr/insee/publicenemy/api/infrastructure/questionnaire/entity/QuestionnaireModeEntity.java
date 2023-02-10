@@ -3,11 +3,12 @@ package fr.insee.publicenemy.api.infrastructure.questionnaire.entity;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,7 +33,7 @@ public class QuestionnaireModeEntity implements Serializable {
     private String synchronisationState;
 
     /**
-     * Constructorer
+     * Constructor
      * @param questionnaire the questionnaire linked to this questionnaire mode
      * @param mode insee mode
      * @param synchronisationState synchronisation state of this mode in orchestrators
@@ -65,7 +66,7 @@ public class QuestionnaireModeEntity implements Serializable {
      * Permits to create a mode entity before saving it to persistence unit
      * @param questionnaireEntity the questionnaire entity to link to the mode entity
      * @param questionnaireMode application mode model
-     * @return
+     * @return the questionnaire mode entity from the questionnaire entity and mode
      */
     public static QuestionnaireModeEntity createEntity(QuestionnaireEntity questionnaireEntity, QuestionnaireMode questionnaireMode) {
         return new QuestionnaireModeEntity(questionnaireEntity, questionnaireMode.getMode(), questionnaireMode.getSynchronisationState());

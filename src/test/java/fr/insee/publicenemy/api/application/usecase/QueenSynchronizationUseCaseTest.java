@@ -90,12 +90,12 @@ class QueenSynchronizationUseCaseTest {
         List<QuestionnaireMode> questionnaireModes = modes.stream().map(QuestionnaireMode::new).toList();
 
         when(questionnaire.getQuestionnaireModes()).thenReturn(questionnaireModes);
-        modes.stream().forEach(mode -> {
+        modes.forEach(mode -> {
             when(ddiUseCase.getJsonLunatic(ddi, context, mode)).thenReturn(map.get(mode));
         });
 
         queenUseCase.synchronizeCreate(ddi, context, questionnaire);
-        modes.stream().forEach(mode -> {
+        modes.forEach(mode -> {
             verify(queenServicePort).createQuestionnaireModel(any(), eq(ddi), eq(map.get(mode)));
         });
     }
